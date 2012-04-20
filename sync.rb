@@ -1,4 +1,5 @@
 #!/usr/bin/ruby
+# first of all - check working dir for changes, if any changes, commit them
 #
 # get current commit rev hash from this repo and central
 # if they are same, stop.
