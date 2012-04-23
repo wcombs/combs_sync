@@ -18,7 +18,7 @@
 require 'net/ssh'
 require 'yaml'
 
-Config = YAML.load_file('combs_sync.cfg')
+Config = YAML.load_file('combs_sync2.cfg')
 
 def ssh_exec!(ssh, command)
 	stdout_data = ""
@@ -97,7 +97,7 @@ cmd = "git --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["
 pull_return = %x[ #{cmd} ]
 puts pull_return
 puts "done pulling"
-cmd = "/Users/wcombs/code/combs_sync/merge.sh"
+cmd = "/Users/wcombs/code/combs_sync/merge2.sh"
 merge_return = %x[ #{cmd} ]
 puts merge_return
 puts "done merging"
