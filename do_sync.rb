@@ -13,12 +13,22 @@
 #				or somehow do it inline while script it going
 # goal of script is that this and central will have same git tree and current rev
 #
+# merging -
+#	if 2 diff locations have same file edited in diff spots, they are merged togeth sent back out
+#	if editing same line(s) one loc gets pushed, but then other loc pulls, notices same file, renames it ORIGNAME.conflicted-fromLOCATION
 #
 
 require 'net/ssh'
 require 'yaml'
+require 'optparse'
 
-Config = YAML.load_file('combs_sync.cfg')
+OptionParser.new do |o|
+  o.on('--config CONFIGFILE') { |filename| $config_file_loc = filename }
+  o.on('-h') { puts o; exit }
+  o.parse!
+end
+
+Config = YAML.load_file($config_file_loc)
 
 def ssh_exec!(ssh, command)
 	stdout_data = ""
@@ -97,7 +107,8 @@ cmd = "git --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["
 pull_return = %x[ #{cmd} ]
 puts pull_return
 puts "done pulling"
-cmd = "/Users/wcombs/code/combs_sync/merge.sh"
+#cmd = "/Users/wcombs/code/combs_sync/merge.sh"
+cmd = Config["merge_script"] + " " + Config["this_repo_worktree"]
 merge_return = %x[ #{cmd} ]
 puts merge_return
 puts "done merging"

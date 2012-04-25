@@ -1,9 +1,11 @@
 #!/bin/bash
 
-echo 1 - $1 >> /tmp/this_happened
-echo 2 - $2 >> /tmp/this_happened
-echo 3 - $3 >> /tmp/this_happened
-echo 4 - $4 >> /tmp/this_happened
-echo 5 - $5 >> /tmp/this_happened
+ORIGNAME=$1
+LOCAL=$2
+REMOTE=$4
+HOSTNESS=`hostname`
+PATHNESS=`pwd | sed -e 's/\//-/g'`
 
-exit
+cp -p "${LOCAL}" "${ORIGNAME}.conflict-from-${HOSTNESS}:${PATHNESS}"
+cp -p "${REMOTE}" "${ORIGNAME}.conflict-from-remote"
+rm "$ORIGNAME"
