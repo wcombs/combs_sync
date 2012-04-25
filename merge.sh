@@ -2,4 +2,6 @@
 
 cd /Users/wcombs/code/this_repo
 
-git mergetool -t combsmerge
+yes | git mergetool -t combsmerge
+git add .
+git commit -a -m 'merge-fix auto-commit'
