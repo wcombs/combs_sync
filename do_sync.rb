@@ -107,10 +107,18 @@ cmd = "git --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["
 pull_return = %x[ #{cmd} ]
 puts pull_return
 puts "done pulling"
-#cmd = "/Users/wcombs/code/combs_sync/merge.sh"
+
+
 cmd = Config["merge_script"] + " " + Config["this_repo_worktree"]
 merge_return = %x[ #{cmd} ]
 puts merge_return
+
+# add files from merge if there was one
+cmd = "git --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " add ."
+this_add_return = %x[ #{cmd} ]
+# commit merge if there was one
+cmd = "git --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " commit -a -m 'combs_sync merge-fix auto-commit'"
+this_commit_return = %x[ #{cmd} ]
 puts "done merging"
 cmd = "git --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " push"
 push_return = %x[ #{cmd} ]

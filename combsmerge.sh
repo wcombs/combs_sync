@@ -8,4 +8,5 @@ PATHNESS=`pwd | sed -e 's/\//-/g'`
 
 cp -p "${LOCAL}" "${ORIGNAME}.conflict-from-${HOSTNESS}:${PATHNESS}"
 cp -p "${REMOTE}" "${ORIGNAME}.conflict-from-remote"
-rm "$ORIGNAME"
+git rm "$ORIGNAME"
+
