@@ -17,7 +17,14 @@
 #	if 2 diff locations have same file edited in diff spots, they are merged togeth sent back out
 #	if editing same line(s) one loc gets pushed, but then other loc pulls, notices same file, renames it ORIGNAME.conflicted-fromLOCATION
 #
+# todo
+# check how symlinks are handled, maybe use them for git repos, and track them sep
+# make it a daemon, wiht start, restart, etc, and make it read conf file on start
+# daemon just fires off syncs every 5,10 mins or so, as defined in conf
+# make it wait 5s or so (conf value) and try again a number of times if there is a lock (make a num_retries conf val as well) so techincally could have 4 try at same time and they'd all get their chance
+# finish tie in with dock icon, make installation and maint of that aspect simple and easy:
 
+require 'rubygems'
 require 'net/ssh'
 require 'yaml'
 require 'optparse'
