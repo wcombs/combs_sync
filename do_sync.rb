@@ -64,36 +64,60 @@ def ssh_exec!(ssh, command)
 	[stdout_data, stderr_data, exit_code, exit_signal]
 end
 
+# checks for lock every wait_time for num_checks
+# returns 0 if lock goes away, 1 if all checks exhaust and lock is still there
 def check_lock(num_checks, wait_time)
 	Net::SSH.start(Config["remote_server"], Config["ssh_user"]) do |ssh|
 		for i in 1..num_checks
 			ret = ssh_exec!(ssh, "ls " + Config["lock_path"])
 			if ret[0].chomp == Config["lock_path"]
-				puts "Sync in progress, waiting " + wait_time + " seconds"
+				puts "Sync in progress, waiting " + wait_time.to_s + " seconds"
 				sleep(Config["lock_wait_time"])
-			else return
+			else return 0
 			end
 		end
+		return 1
 	end
 end
 
 def set_lock
-	check_lock(1, Config["lock_wait_time"])
-	ret = ssh_exec!(ssh, "echo '" + Config["unique_id"] + "' > " + Config["lock_path"])
-	if ret[2] != 0
-		puts "Error setting lock!"
-		puts "Got this error on remote host: " + ret[1]
-	end
-	# check lock for unique id just in case someone else snuck in there at the same time
-	sleep(1)
-	ret = ssh_exec!(ssh, "cat " + Config["lock_path"])
-	p ret
-	if ret[0].chomp != Config["unique_id"]
-		puts "wrong lock"
-		check_lock(Config["lock_retries"], Config["lock_wait_time"])
+	Net::SSH.start(Config["remote_server"], Config["ssh_user"]) do |ssh|
+		check_lock(1, Config["lock_wait_time"])
+		ret = ssh_exec!(ssh, "echo '" + Config["unique_id"] + "' > " + Config["lock_path"])
+		if ret[2] != 0
+			puts "Error setting lock!"
+			puts "Got this error on remote host: " + ret[1]
+		end
+		# check lock for unique id just in case someone else snuck in there at the same time
+		sleep(1)
+		ret = ssh_exec!(ssh, "cat " + Config["lock_path"])
+		p ret
+		if ret[0].chomp != Config["unique_id"]
+			puts "wrong lock"
+			check_lock(Config["lock_retries"], Config["lock_wait_time"])
+			exit
+		end
 		exit
 	end
-	exit
+end
+
+# sets lock, sleeps, checks it to be sure its right
+# returns 0 on success, 1 on fail
+def set_sleep_check_lock
+	Net::SSH.start(Config["remote_server"], Config["ssh_user"]) do |ssh|
+		ret = ssh_exec!(ssh, "echo '" + Config["unique_id"] + "' > " + Config["lock_path"])
+		if ret[2] != 0
+			puts "Error setting lock!"
+			puts "Got this error on remote host: " + ret[1]
+		end
+		# check lock for unique id just in case someone else snuck in there at the same time
+		sleep(1)
+		ret = ssh_exec!(ssh, "cat " + Config["lock_path"])
+		if ret[0].chomp != Config["unique_id"]
+			return 1
+		else return 0
+		end
+	end
 end
 
 def remove_lock
@@ -106,8 +130,49 @@ def remove_lock
 	end
 end
 
+#case - its there
+#wait 5 times and exit if it doesnt go away
+#if it goes away, - set-sleep1-check, if its good move on, if not bail
+#
+#case - its not there
+#set-sleep-check and if its good move on
+#if its diff at this point we need to wait 5 times and exit if it stays, retry set-sleep-check
+#
+#check for lock
+#if there wait num times num length until lock file isnt there
+#	once it isnt there - set it, sleep 1 and check it, then move on
+#		if it fails after the sleep1 check then we need to wait num times num length until that file isnt there
+#			once it isnt there - set it, sleep 1 nad check it, then move on
+#				if this sleep1 check fails then we bail
+#else if not there:
+#	set it, sleep 1 and check it, then move on
+#		if check after sleep1 fails, wait num times num length utnil that file isnt there
+#			once it isnt there, set it, sleep 1 and check it, then move on
+#				if this sleep1 check fails then we bail
 
-check_and_set_lock
+if check_lock(Config["lock_retries"], Config["lock_wait_time"]) == 0
+	puts("no lock, so we're gonna try to set one")
+	if set_sleep_check_lock == 0
+		puts("Great Success!, moving on...");
+	else
+		puts("Error during lock set, must be someone else syncing, waiting again...")
+		if check_lock(Config["lock_retries"], Config["lock_wait_time"]) == 0
+			puts("ok now lock is gone, lets try setting one more time")
+			if set_sleep_check_lock == 0
+				puts("Great Success!, moving on...");
+			else
+				puts("Error during second lock set, exiting...")
+				exit
+			end
+		else
+			puts("Lock still there, exiting");
+			exit
+		end
+	end
+else
+	puts("Lock still there, exiting")
+	exit
+end
 
 # check for changes in local repo
 cmd = "git --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " status --porcelain"
