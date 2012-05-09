@@ -68,16 +68,18 @@ def check_and_set_lock
 	Net::SSH.start(Config["remote_server"], Config["ssh_user"]) do |ssh|
 		ret = ssh_exec!(ssh, "ls " + Config["lock_path"])
 		if ret[0].chomp == Config["lock_path"]
-			puts "Sync in progress, waiting " + Config[""] + " seconds"
+			puts "Sync in progress, waiting " + Config["lock_wait_time"].to_s + " seconds"
 			sleep(Config["lock_wait_time"])
-			puts "Trying again..."
-			for i in 1..Config["lock_retries"]
+			for i in 1..(Config["lock_retries"] - 1)
+				puts "Trying again..."
 				ret = ssh_exec!(ssh, "ls " + Config["lock_path"])
 				if ret[0].chomp == Config["lock_path"]
-				puts "Sync in progress, waiting " + Config[""] + " seconds"
-				sleep(Config["lock_wait_time"])
-				puts "Trying again..."
-			puts "Tried " + Config["lock_retries"] + " times, exiting..."
+					puts "Sync in progress, waiting " + Config["lock_wait_time"].to_s + " seconds"
+					sleep(Config["lock_wait_time"])
+				else break
+				end
+			end
+			puts "Tried " + Config["lock_retries"].to_s + " times, exiting..."
 			exit
 		else
 			ret = ssh_exec!(ssh, "touch " + Config["lock_path"])
