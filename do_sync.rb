@@ -64,31 +64,36 @@ def ssh_exec!(ssh, command)
 	[stdout_data, stderr_data, exit_code, exit_signal]
 end
 
-def check_and_set_lock
+def check_lock(num_checks, wait_time)
 	Net::SSH.start(Config["remote_server"], Config["ssh_user"]) do |ssh|
-		ret = ssh_exec!(ssh, "ls " + Config["lock_path"])
-		if ret[0].chomp == Config["lock_path"]
-			puts "Sync in progress, waiting " + Config["lock_wait_time"].to_s + " seconds"
-			sleep(Config["lock_wait_time"])
-			for i in 1..(Config["lock_retries"] - 1)
-				puts "Trying again..."
-				ret = ssh_exec!(ssh, "ls " + Config["lock_path"])
-				if ret[0].chomp == Config["lock_path"]
-					puts "Sync in progress, waiting " + Config["lock_wait_time"].to_s + " seconds"
-					sleep(Config["lock_wait_time"])
-				else break
-				end
-			end
-			puts "Tried " + Config["lock_retries"].to_s + " times, exiting..."
-			exit
-		else
-			ret = ssh_exec!(ssh, "touch " + Config["lock_path"])
-			if ret[2] != 0
-				puts "Error setting lock!"
-				puts "Got this error on remote host: " + ret[1]
+		for i in 1..num_checks
+			ret = ssh_exec!(ssh, "ls " + Config["lock_path"])
+			if ret[0].chomp == Config["lock_path"]
+				puts "Sync in progress, waiting " + wait_time + " seconds"
+				sleep(Config["lock_wait_time"])
+			else return
 			end
 		end
 	end
+end
+
+def set_lock
+	check_lock(1, Config["lock_wait_time"])
+	ret = ssh_exec!(ssh, "echo '" + Config["unique_id"] + "' > " + Config["lock_path"])
+	if ret[2] != 0
+		puts "Error setting lock!"
+		puts "Got this error on remote host: " + ret[1]
+	end
+	# check lock for unique id just in case someone else snuck in there at the same time
+	sleep(1)
+	ret = ssh_exec!(ssh, "cat " + Config["lock_path"])
+	p ret
+	if ret[0].chomp != Config["unique_id"]
+		puts "wrong lock"
+		check_lock(Config["lock_retries"], Config["lock_wait_time"])
+		exit
+	end
+	exit
 end
 
 def remove_lock
