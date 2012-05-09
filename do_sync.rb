@@ -16,12 +16,12 @@
 #	if 2 diff locations have same file edited in diff spots, they are merged togeth sent back out
 #	if editing same line(s) one loc gets pushed, but then other loc pulls, notices same file, renames it ORIGNAME.conflicted-fromLOCATION
 #
-# todo
-# check how symlinks are handled, maybe use them for git repos, and track them sep
-# make it a daemon, wiht start, restart, etc, and make it read conf file on start
+# TODO
+# bigfiles handling, find a good thresh and see below to code it
+# maybe use symlinks for git repos, track them sep
+# make it a daemon, with start, restart, etc, and make it read conf file on start
 # daemon just fires off syncs every 5,10 mins or so, as defined in conf
-# make it wait 5s or so (conf value) and try again a number of times if there is a lock (make a num_retries conf val as well) so techincally could have 4 try at same time and they'd all get their chance
-# finish tie in with dock icon, make installation and maint of that aspect simple and easy:
+# finish tie in with dock icon for any notifications, or growl, make installation and maint of that aspect simple and easy:
 
 require 'rubygems'
 require 'net/ssh'
@@ -80,27 +80,6 @@ def check_lock(num_checks, wait_time)
 	end
 end
 
-def set_lock
-	Net::SSH.start(Config["remote_server"], Config["ssh_user"]) do |ssh|
-		check_lock(1, Config["lock_wait_time"])
-		ret = ssh_exec!(ssh, "echo '" + Config["unique_id"] + "' > " + Config["lock_path"])
-		if ret[2] != 0
-			puts "Error setting lock!"
-			puts "Got this error on remote host: " + ret[1]
-		end
-		# check lock for unique id just in case someone else snuck in there at the same time
-		sleep(1)
-		ret = ssh_exec!(ssh, "cat " + Config["lock_path"])
-		p ret
-		if ret[0].chomp != Config["unique_id"]
-			puts "wrong lock"
-			check_lock(Config["lock_retries"], Config["lock_wait_time"])
-			exit
-		end
-		exit
-	end
-end
-
 # sets lock, sleeps, checks it to be sure its right
 # returns 0 on success, 1 on fail
 def set_sleep_check_lock
@@ -130,26 +109,7 @@ def remove_lock
 	end
 end
 
-#case - its there
-#wait 5 times and exit if it doesnt go away
-#if it goes away, - set-sleep1-check, if its good move on, if not bail
-#
-#case - its not there
-#set-sleep-check and if its good move on
-#if its diff at this point we need to wait 5 times and exit if it stays, retry set-sleep-check
-#
-#check for lock
-#if there wait num times num length until lock file isnt there
-#	once it isnt there - set it, sleep 1 and check it, then move on
-#		if it fails after the sleep1 check then we need to wait num times num length until that file isnt there
-#			once it isnt there - set it, sleep 1 nad check it, then move on
-#				if this sleep1 check fails then we bail
-#else if not there:
-#	set it, sleep 1 and check it, then move on
-#		if check after sleep1 fails, wait num times num length utnil that file isnt there
-#			once it isnt there, set it, sleep 1 and check it, then move on
-#				if this sleep1 check fails then we bail
-
+# crazy locking code, had to make it verify because of remote ssh lockfile delay
 if check_lock(Config["lock_retries"], Config["lock_wait_time"]) == 0
 	puts("no lock, so we're gonna try to set one")
 	if set_sleep_check_lock == 0
@@ -173,6 +133,9 @@ else
 	puts("Lock still there, exiting")
 	exit
 end
+
+# TODO	- set a config value for bigfile size thresh and bigfiles dir, and make sure thats gitignored
+#		- check for bigfiles and mv them to bigfiles dir, so they stay local
 
 # check for changes in local repo
 cmd = "git --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " status --porcelain"
