@@ -16,17 +16,32 @@
 #	if 2 diff locations have same file edited in diff spots, they are merged togeth sent back out
 #	if editing same line(s) one loc gets pushed, but then other loc pulls, notices same file, renames it ORIGNAME.conflicted-fromLOCATION
 #
+# Git Behaviour:
+#	-if you have a git repo within the main tree, git ignores everything in that dir, the dir is synced but no files are, and local changes stay local
+#	-the only way to get that dir tracked again is to remove it and git rm it and commit, then remake as a regular dir
+#	-maybe track git repos after all this way, and let them live independently in code dir, or just use symlinks
+#	-dont worry about looking for git dirs and warning for now
+#
+#
 # TODO
+#
 # bigfiles handling, find a good thresh and see below to code it
+#	-try to make this process fast, figure a good way so it will scale as dir gets huge
+#	-make sure it exits out and clears lock if it cant clear the directory of big files
+#	
 # maybe use symlinks for git repos, track them sep
+#	-need to run through and make sure there arent any git repos within, error out if so
+#
 # make it a daemon, with start, restart, etc, and make it read conf file on start
 # daemon just fires off syncs every 5,10 mins or so, as defined in conf
 # finish tie in with dock icon for any notifications, or growl, make installation and maint of that aspect simple and easy:
+#
 
 require 'rubygems'
 require 'net/ssh'
 require 'yaml'
 require 'optparse'
+require 'fileutils'
 
 OptionParser.new do |o|
   o.on('--config CONFIGFILE') { |filename| $config_file_loc = filename }
@@ -134,8 +149,25 @@ else
 	exit
 end
 
-# TODO	- set a config value for bigfile size thresh and bigfiles dir, and make sure thats gitignored
-#		- check for bigfiles and mv them to bigfiles dir, so they stay local
+
+# Pre-Checks
+# -bigfiles check
+cmd = "mkdir -p " + Config["big_files_dir"]
+mkdir_status = %x[ #{cmd} ]
+cmd = 'find ' + Config["this_repo_worktree"] + ' -size +' + Config["big_files_thresh"]
+big_files_list = %x[ #{cmd} ]
+list = big_files_list.split("\n")
+list.each do |f|
+	FileUtils.mv(f, Config["big_files_dir"] + "/" + f.gsub(/\//, '-'))
+end
+
+# one last check, need to optimize this in the future to not use finds
+cmd = 'find ' + Config["this_repo_worktree"] + ' -size +' + Config["big_files_thresh"]
+big_files_list = %x[ #{cmd} ]
+# if anything in big_files_list, exit
+
+remove_lock
+exit
 
 # check for changes in local repo
 cmd = "git --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " status --porcelain"
