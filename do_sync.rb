@@ -25,10 +25,6 @@
 #
 # TODO
 #
-# bigfiles handling, find a good thresh and see below to code it
-#	-try to make this process fast, figure a good way so it will scale as dir gets huge
-#	-make sure it exits out and clears lock if it cant clear the directory of big files
-#	
 # maybe use symlinks for git repos, track them sep
 #	-need to run through and make sure there arent any git repos within, error out if so
 #
@@ -154,20 +150,29 @@ end
 # -bigfiles check
 cmd = "mkdir -p " + Config["big_files_dir"]
 mkdir_status = %x[ #{cmd} ]
-cmd = 'find ' + Config["this_repo_worktree"] + ' -size +' + Config["big_files_thresh"]
+#cmd = 'find ' + Config["this_repo_worktree"] + ' -size +' + Config["big_files_thresh"]
+cmd = 'mdfind -onlyin ' + Config["this_repo_worktree"] + ' \'kMDItemFSSize > ' + Config["big_files_thresh"].to_s + '\''
 big_files_list = %x[ #{cmd} ]
 list = big_files_list.split("\n")
 list.each do |f|
-	FileUtils.mv(f, Config["big_files_dir"] + "/" + f.gsub(/\//, '-'))
+	new_name = f.gsub(/\//, '_').gsub(/ /, '.')
+	if File.exist?(Config["big_files_dir"] + "/" + new_name)
+		new_name += "_1"
+	end
+	FileUtils.mv(f, Config["big_files_dir"] + "/" + new_name)
 end
 
 # one last check, need to optimize this in the future to not use finds
-cmd = 'find ' + Config["this_repo_worktree"] + ' -size +' + Config["big_files_thresh"]
+#cmd = 'find ' + Config["this_repo_worktree"] + ' -size +' + Config["big_files_thresh"]
+cmd = 'mdfind -onlyin ' + Config["this_repo_worktree"] + ' \'kMDItemFSSize > ' + Config["big_files_thresh"].to_s + '\''
 big_files_list = %x[ #{cmd} ]
-# if anything in big_files_list, exit
-
-remove_lock
-exit
+if big_files_list == ""
+	puts "all good, moving on"
+else
+	puts "oh noes, still big files, exiting"
+	remove_lock
+	exit
+end
 
 # check for changes in local repo
 cmd = "git --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " status --porcelain"
