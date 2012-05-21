@@ -25,11 +25,6 @@
 #
 # TODO
 #
-# maybe use symlinks for git repos, track them sep
-#	-need to run through and make sure there arent any git repos within, error out if so
-#
-# make it a daemon, with start, restart, etc, and make it read conf file on start
-# daemon just fires off syncs every 5,10 mins or so, as defined in conf
 # finish tie in with dock icon for any notifications, or growl, make installation and maint of that aspect simple and easy:
 #
 
