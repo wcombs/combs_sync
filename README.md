@@ -7,30 +7,25 @@ combs_sync
 
 * get the script
  
-```ruby
-require 'redcarpet'
-markdown = Redcarpet.new("Hello World!")
-puts markdown.to_html
-```
-		
 ```bash
 git clone git@github.com:wcombs/combs_sync.git /code/dir/combs_sync
 ```
 
-setup shared ssh keys to server box, be sure you can ssh server_machine_hostname with no problems
+* setup shared ssh keys to server box, be sure you can ssh server_machine_hostname with no problems
 
-setup a bare repo on the server box
-	if repo/files already exist just do a git clone --bare and put it in place somewhere on server box
-	if new do git init --bare reponame.git on server box
+* setup a bare repo on the server box
+** if repo/files already exist just do a git clone --bare and put it in place somewhere on server box
+** if new do git init --bare reponame.git on server box
 
-on client box pull the repo down:
-	go to dir you want to keep the main sync dir in, then
-	git clone wcombs@server_machine_hostname:synced.git
+* on client box pull the repo down:
+** go to dir you want to keep the main sync dir in, then
 
+```bash
+git clone wcombs@server_machine_hostname:synced.git
+```
+* paste the following into your .git/config file in the endpoint repos (note the 'url' line):
 
-
-paste the following into your .git/config file in the endpoint repos (note the 'url' line):
-
+```git
 [core]
     repositoryformatversion = 0
     filemode = true
@@ -45,23 +40,30 @@ paste the following into your .git/config file in the endpoint repos (note the '
     merge = refs/heads/master
 [merge]
     tool = combsmerge
+```
 
-paste the following into your .gitignore in the endpoint main repo dir (and anything else you want to keep local and not synced in that dir):
+* paste the following into your .gitignore in the endpoint main repo dir (and anything else you want to keep local and not synced in that dir):
 
+```
 big_files/
 [Tt]humbs.db
 *.DS_Store
+```
 
-then run:
+* then run:
+
+```bash
 git add .
 git commit -m 'gitignore'
 git push origin master
+```
  
-paste the following into /code/dir/combs_sync/combs_sync.cfg on your endpoint machine:
-note:	lock_path is on the server machine
-		unique_id must be unique between client boxes
-		big_files_thresh is in bytes (below is 10 MB)
+* paste the following into /code/dir/combs_sync/combs_sync.cfg on your endpoint machine:
+** lock_path is on the server machine
+** unique_id must be unique between client boxes
+** big_files_thresh is in bytes (below is 10 MB)
 
+```ruby
 this_repo_gitdir: /Users/wcombs/synced/.git
 this_repo_worktree: /Users/wcombs/synced
 lock_path: /some/remote/dir/combs_sync_lock
@@ -74,7 +76,10 @@ unique_id: combsrepo1
 big_files_dir: /Users/wcombs/synced/big_files
 big_files_thresh: 10000000
 dock_notify: on
+```
 
+* cron it up (below is every min):
 
-cron it up (below is every min):
+```bash
 * * * * * bash -c 'source /etc/bashrc && source /Users/wcombs/.rvm/scripts/rvm && /usr/bin/env ruby /Users/wcombs/code/combs_sync/do_sync.rb --config=/Users/wcombs/code/combs_sync/combs_sync.cfg >> /tmp/log 2>&1'
+```
