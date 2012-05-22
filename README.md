@@ -1,4 +1,5 @@
-combs_sync - a simple ruby script that uses git to keep your files in sync across multiple machines.
+# combs_sync #
+### a simple ruby script that uses git to keep your files in sync across multiple machines. ###
 
 Setup:
 
