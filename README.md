@@ -63,7 +63,7 @@ git push origin master
 ** unique_id must be unique between client boxes
 ** big_files_thresh is in bytes (below is 10 MB)
 
-```ruby
+```
 git_exe_location: /usr/local/bin/git
 this_repo_gitdir: /Users/wcombs/synced/.git
 this_repo_worktree: /Users/wcombs/synced

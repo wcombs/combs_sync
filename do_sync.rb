@@ -186,7 +186,6 @@ else
 end
 
 cmd = Config["git_exe_location"] + " --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " pull"
-puts cmd
 pull_return = %x[ #{cmd} ]
 puts pull_return
 puts "done pulling"
