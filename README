@@ -61,3 +61,7 @@ unique_id: combsrepo1
 big_files_dir: /Users/wcombs/synced/big_files
 big_files_thresh: 10000000
 dock_notify: on
+
+
+cron it up (below is every min):
+* * * * * bash -c 'source /etc/bashrc && source /Users/wcombs/.rvm/scripts/rvm && /usr/bin/env ruby /Users/wcombs/code/combs_sync/do_sync.rb --config=/Users/wcombs/code/combs_sync/combs_sync.cfg >> /tmp/log 2>&1'
