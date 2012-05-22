@@ -1,13 +1,20 @@
 combs_sync
 ==========
 
-### a simple ruby script that uses git to keep your files in sync across multiple machines. ###
+### a simple ruby script that uses git to keep your files in sync across multiple machines.
 
-## Setup: ##
+### Setup: ###
 
-* get the script:
-
+* get the script
+ 
+		```ruby
+		require 'redcarpet'
+		markdown = Redcarpet.new("Hello World!")
+		puts markdown.to_html
+		```
+		```bash
 		git clone git@github.com:wcombs/combs_sync.git /code/dir/combs_sync
+		```
 
 setup shared ssh keys to server box, be sure you can ssh server_machine_hostname with no problems
 
