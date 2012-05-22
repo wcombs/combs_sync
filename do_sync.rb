@@ -181,7 +181,7 @@ else
 	cmd = Config["git_exe_location"] + " --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " add ."
 	this_add_return = %x[ #{cmd} ]
 	# commit changes
-	cmd = Config["git_exe_location"] + " --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " commit -a -m 'combs_sync auto-commit'"
+	cmd = Config["git_exe_location"] + " --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " commit -a -m 'combs_sync auto-commit from " + Config["unique_id"] + "'"
 	this_commit_return = %x[ #{cmd} ]
 end
 
@@ -199,7 +199,7 @@ puts merge_return
 cmd = Config["git_exe_location"] + " --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " add ."
 this_add_return = %x[ #{cmd} ]
 # commit merge if there was one
-cmd = Config["git_exe_location"] + " --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " commit -a -m 'combs_sync merge-fix auto-commit'"
+cmd = Config["git_exe_location"] + " --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " commit -a -m 'combs_sync merge-fix auto-commit " + Config["unique_id"] + "'"
 this_commit_return = %x[ #{cmd} ]
 puts "done merging"
 cmd = Config["git_exe_location"] + " --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " push"
