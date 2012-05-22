@@ -6,6 +6,7 @@ combs_sync
 ## Setup: ##
 
 * get the script:
+
 		git clone git@github.com:wcombs/combs_sync.git /code/dir/combs_sync
 
 setup shared ssh keys to server box, be sure you can ssh server_machine_hostname with no problems
