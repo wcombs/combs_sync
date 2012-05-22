@@ -185,7 +185,7 @@ else
 	this_commit_return = %x[ #{cmd} ]
 end
 
-cmd = "git --git-dir=" + Config["this_repo_gitdir"] + " pull"
+cmd = "git --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " pull"
 pull_return = %x[ #{cmd} ]
 puts pull_return
 puts "done pulling"
