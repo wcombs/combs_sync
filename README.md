@@ -14,11 +14,11 @@ git clone git@github.com:wcombs/combs_sync.git /code/dir/combs_sync
 * setup shared ssh keys to server box, be sure you can ssh server_machine_hostname with no problems
 
 * setup a bare repo on the server box
-** if repo/files already exist just do a git clone --bare and put it in place somewhere on server box
-** if new do git init --bare reponame.git on server box
+	* if repo/files already exist just do a git clone --bare and put it in place somewhere on server box
+	* if new do git init --bare reponame.git on server box
 
 * on client box pull the repo down:
-** go to dir you want to keep the main sync dir in, then
+	* go to dir you want to keep the main sync dir in, then
 
 ```bash
 git clone wcombs@server_machine_hostname:synced.git
@@ -64,6 +64,7 @@ git push origin master
 ** big_files_thresh is in bytes (below is 10 MB)
 
 ```ruby
+git_exe_location: /usr/local/bin/git
 this_repo_gitdir: /Users/wcombs/synced/.git
 this_repo_worktree: /Users/wcombs/synced
 lock_path: /some/remote/dir/combs_sync_lock

@@ -170,7 +170,7 @@ else
 end
 
 # check for changes in local repo
-cmd = "git --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " status --porcelain"
+cmd = Config["git_exe_location"] + " --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " status --porcelain"
 this_repo_status = %x[ #{cmd} ]
 
 if this_repo_status == ""
@@ -178,14 +178,15 @@ if this_repo_status == ""
 else
 	puts "changes found in work tree, committing them"
 	# add untracked files
-	cmd = "git --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " add ."
+	cmd = Config["git_exe_location"] + " --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " add ."
 	this_add_return = %x[ #{cmd} ]
 	# commit changes
-	cmd = "git --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " commit -a -m 'combs_sync auto-commit'"
+	cmd = Config["git_exe_location"] + " --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " commit -a -m 'combs_sync auto-commit'"
 	this_commit_return = %x[ #{cmd} ]
 end
 
-cmd = "git --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " pull"
+cmd = Config["git_exe_location"] + " --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " pull"
+puts cmd
 pull_return = %x[ #{cmd} ]
 puts pull_return
 puts "done pulling"
@@ -196,13 +197,13 @@ merge_return = %x[ #{cmd} ]
 puts merge_return
 
 # add files from merge if there was one
-cmd = "git --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " add ."
+cmd = Config["git_exe_location"] + " --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " add ."
 this_add_return = %x[ #{cmd} ]
 # commit merge if there was one
-cmd = "git --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " commit -a -m 'combs_sync merge-fix auto-commit'"
+cmd = Config["git_exe_location"] + " --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " commit -a -m 'combs_sync merge-fix auto-commit'"
 this_commit_return = %x[ #{cmd} ]
 puts "done merging"
-cmd = "git --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " push"
+cmd = Config["git_exe_location"] + " --git-dir=" + Config["this_repo_gitdir"] + " --work-tree=" + Config["this_repo_worktree"] + " push"
 push_return = %x[ #{cmd} ]
 puts push_return
 puts "done pushing"
