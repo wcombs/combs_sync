@@ -77,6 +77,7 @@ unique_id: combsrepo1
 big_files_dir: /Users/wcombs/synced/big_files
 big_files_thresh: 10000000
 dock_notify: on
+dockbadge_post_url: http://localhost:12345/post.html
 ```
 
 * cron it up (below is every min):

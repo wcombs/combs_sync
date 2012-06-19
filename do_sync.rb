@@ -33,6 +33,7 @@ require 'net/ssh'
 require 'yaml'
 require 'optparse'
 require 'fileutils'
+require 'rest-client'
 
 OptionParser.new do |o|
   o.on('--config CONFIGFILE') { |filename| $config_file_loc = filename }
@@ -115,6 +116,13 @@ def remove_lock
 	end
 end
 
+def dockbadge_display(msg)
+	RestClient.post(Config["dockbadge_post_url"], :answer => msg)
+end
+#dockbadge_display("test")
+#exit
+dockbadge_display("locked...")
+
 # crazy locking code, had to make it verify because of remote ssh lockfile delay
 if check_lock(Config["lock_retries"], Config["lock_wait_time"]) == 0
 	puts("no lock, so we're gonna try to set one")
@@ -128,18 +136,22 @@ if check_lock(Config["lock_retries"], Config["lock_wait_time"]) == 0
 				puts("Great Success!, moving on...");
 			else
 				puts("Error during second lock set, exiting...")
+				dockbadge_display("error")
 				exit
 			end
 		else
 			puts("Lock still there, exiting");
+			dockbadge_display("error")
 			exit
 		end
 	end
 else
 	puts("Lock still there, exiting")
+	dockbadge_display("error")
 	exit
 end
 
+dockbadge_display("syncing...")
 
 # Pre-Checks
 # -bigfiles check
@@ -208,3 +220,5 @@ puts push_return
 puts "done pushing"
 
 remove_lock
+
+dockbadge_display("synced")
